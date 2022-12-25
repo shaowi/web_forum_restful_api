@@ -1,0 +1,10 @@
+DB_HOST=localhost
+DB_PORT=5000
+DB_USER=postgres
+DB_PASS=123
+DB_NAME=dev
+DB_SSLMODE=disable
+EmailFrom= webbforumm@gmail.com
+EmailFromSMTPPw=kdlavcphfzutdgbv
+
+REST_PORT=3000

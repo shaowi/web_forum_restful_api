@@ -34,7 +34,7 @@ func CreateTables(db *gorm.DB) {
 
 func AddDummyData() {
 	AddUser("abby@test.com", "12356", "abby", 1, "dark")
-	AddUser("bob@test.com", "123456", "bob", 1, "red")
+	AddUser("bob@test.com", "s9614067c", "bob", 1, "red")
 	AddUser("cassie@test.com", "456789", "cassie", 2, "pink")
 	AddUser("shaogamers@gmail.com", "719346", "shao", 1, "grape")
 	AddUser("shao.lee@cldcvr.com", "719346", "leeshaowee", 1, "violet")

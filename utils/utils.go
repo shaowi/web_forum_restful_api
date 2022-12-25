@@ -27,10 +27,8 @@ func GetJwtToken(cookie string, SecretKey string) (*jwt.Token, error) {
 	})
 }
 
-func GetCurrentUser(c *fiber.Ctx, SecretKey string) (models.User, error) {
-	cookie := c.Cookies("jwt")
-
-	token, err := GetJwtToken(cookie, SecretKey)
+func GetCurrentUser(c *fiber.Ctx, SecretKey string, jwt_token string) (models.User, error) {
+	token, err := GetJwtToken(jwt_token, SecretKey)
 
 	var user models.User
 

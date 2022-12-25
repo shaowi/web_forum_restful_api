@@ -11,10 +11,6 @@ import (
 )
 
 func Posts(c *fiber.Ctx) error {
-	// Check that user is logged in
-	if _, err := utils.GetCurrentUser(c, SecretKey); err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
-	}
 	posts := []models.Post{}
 	if err := database.DB.Joins("User").Find(&posts).Error; err != nil {
 		return utils.ErrorResponse(c, utils.GetError)
@@ -27,34 +23,34 @@ func Posts(c *fiber.Ctx) error {
 }
 
 func ViewSeenPosts(c *fiber.Ctx) error {
-	/// Check that user is logged in
-	user, err := utils.GetCurrentUser(c, SecretKey)
+	userId, err := utils.ParseUint(c.Params("userId"))
 	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
+		return err
 	}
-	condition := map[string]interface{}{"popularities.user_id": user.UserId}
+
+	condition := map[string]interface{}{"popularities.user_id": userId}
 	joinPopularityCondition := "JOIN popularities ON popularities.post_id = posts.post_id"
 	return utils.GetHistoryPosts(c, condition, joinPopularityCondition)
 }
 
 func ViewLikedPosts(c *fiber.Ctx) error {
-	/// Check that user is logged in
-	user, err := utils.GetCurrentUser(c, SecretKey)
+	userId, err := utils.ParseUint(c.Params("userId"))
 	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
+		return err
 	}
-	condition := map[string]interface{}{"popularities.user_id": user.UserId, "popularities.likes": true}
+
+	condition := map[string]interface{}{"popularities.user_id": userId, "popularities.likes": true}
 	joinPopularityCondition := "JOIN popularities ON popularities.post_id = posts.post_id"
 	return utils.GetHistoryPosts(c, condition, joinPopularityCondition)
 }
 
 func ViewCommentedPosts(c *fiber.Ctx) error {
-	/// Check that user is logged in
-	user, err := utils.GetCurrentUser(c, SecretKey)
+	userId, err := utils.ParseUint(c.Params("userId"))
 	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
+		return err
 	}
-	condition := map[string]interface{}{"comments.user_id": user.UserId}
+
+	condition := map[string]interface{}{"comments.user_id": userId}
 	joinCommentCondition := "JOIN comments ON comments.post_id = posts.post_id"
 	return utils.GetHistoryPosts(c, condition, joinCommentCondition)
 }
@@ -65,13 +61,13 @@ func AddPost(c *fiber.Ctx) error {
 	if err := c.BodyParser(&data); err != nil {
 		return err
 	}
-	user, err := utils.GetCurrentUser(c, SecretKey)
+	user_id, err := utils.ParseUint(data["user_id"])
 	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
+		return err
 	}
 
 	post := models.Post{
-		UserId:     user.UserId,
+		UserId:     user_id,
 		Title:      data["title"],
 		Body:       data["body"],
 		Categories: data["categories"],
@@ -86,22 +82,12 @@ func AddPost(c *fiber.Ctx) error {
 }
 
 func DeletePost(c *fiber.Ctx) error {
-	// Check that user is logged in
-	user, err := utils.GetCurrentUser(c, SecretKey)
-	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
+	postId := c.Params("postId")
+	if err := database.DB.Delete(&models.Post{}, postId).Error; err != nil {
+		return utils.ErrorResponse(c, utils.DeleteError)
 	}
+	return utils.ResponseBody(c, utils.DeleteSuccess)
 
-	// Check that user is an administrator
-	if user.AccessType == 1 {
-		postId := c.Params("postId")
-		if err := database.DB.Delete(&models.Post{}, postId).Error; err != nil {
-			return utils.ErrorResponse(c, utils.DeleteError)
-		}
-		return utils.ResponseBody(c, utils.DeleteSuccess)
-	}
-
-	return utils.ErrorResponse(c, utils.ForbiddenAction)
 }
 
 func LikePost(c *fiber.Ctx) error {
@@ -109,11 +95,6 @@ func LikePost(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(&data); err != nil {
 		return err
-	}
-
-	user, err := utils.GetCurrentUser(c, SecretKey)
-	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
 	}
 
 	// Like: 1, Unlike: 0
@@ -153,13 +134,18 @@ func LikePost(c *fiber.Ctx) error {
 	// Update the like status of this post for current user based on type
 	var popularity models.Popularity
 
+	user_id, err := utils.ParseUint(data["user_id"])
+	if err != nil {
+		return err
+	}
+
 	// Search
-	condition = map[string]interface{}{"post_id": postId, "user_id": user.UserId}
+	condition = map[string]interface{}{"post_id": postId, "user_id": user_id}
 	res := database.DB.Where(condition).Limit(1).Find(&popularity)
 	if res.RowsAffected == 0 {
 		// Create new record as user info has not been recorded yet for this post
 		popularity = models.Popularity{
-			UserId: user.UserId,
+			UserId: user_id,
 			PostId: postId,
 			Likes:  like,
 		}
@@ -177,9 +163,15 @@ func LikePost(c *fiber.Ctx) error {
 }
 
 func ViewPost(c *fiber.Ctx) error {
-	user, err := utils.GetCurrentUser(c, SecretKey)
+	var data map[string]string
+
+	if err := c.BodyParser(&data); err != nil {
+		return err
+	}
+
+	user_id, err := utils.ParseUint(data["user_id"])
 	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
+		return err
 	}
 
 	// Incrementing the views of a post
@@ -205,12 +197,12 @@ func ViewPost(c *fiber.Ctx) error {
 	var popularity models.Popularity
 
 	// Search
-	condition = map[string]interface{}{"post_id": postId, "user_id": user.UserId}
+	condition = map[string]interface{}{"post_id": postId, "user_id": user_id}
 	res := database.DB.Where(condition).Limit(1).Find(&popularity)
 	if res.RowsAffected == 0 {
 		// Create new record as user info has not been recorded yet for this post
 		popularity = models.Popularity{
-			UserId: user.UserId,
+			UserId: user_id,
 			PostId: postId,
 		}
 		if err := database.DB.Create(&popularity).Error; err != nil {

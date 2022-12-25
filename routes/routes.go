@@ -11,14 +11,13 @@ func Setup(app *fiber.App) {
 
 	// User API
 	user_api := api.Group("/user")
-	user_api.Get("", controllers.User)
+	user_api.Post("", controllers.User)
 	user_api.Post("/register", controllers.Register)
 	user_api.Post("/login", controllers.Login)
-	user_api.Post("/logout", controllers.Logout)
 	user_api.Post("/resetpassword", controllers.ResetPassword)
 	user_api.Post("/changepassword", controllers.ChangePassword)
 	user_api.Post("/changename", controllers.ChangeName)
-	user_api.Get("/userstats", controllers.UserStats)
+	user_api.Post("/userstats", controllers.UserStats)
 
 	// Post API
 	post_api := api.Group("/post")
@@ -28,9 +27,9 @@ func Setup(app *fiber.App) {
 	post_api.Post("/delete/:postId", controllers.DeletePost)
 	post_api.Post("/view/:postId", controllers.ViewPost)
 	post_api.Post("/like/:postId", controllers.LikePost)
-	post_api_history.Get("/view", controllers.ViewSeenPosts)
-	post_api_history.Get("/like", controllers.ViewLikedPosts)
-	post_api_history.Get("/comment", controllers.ViewCommentedPosts)
+	post_api_history.Get("/view/:userId", controllers.ViewSeenPosts)
+	post_api_history.Get("/like/:userId", controllers.ViewLikedPosts)
+	post_api_history.Get("/comment/:userId", controllers.ViewCommentedPosts)
 
 	// Comment API
 	comment_api := post_api.Group("/:postId/comment")
@@ -40,6 +39,6 @@ func Setup(app *fiber.App) {
 
 	// Popularity API
 	popularity_api := api.Group("/popularity")
-	popularity_api.Get("/:postId", controllers.GetLikedStatus)
+	popularity_api.Get("/:postId/:userId", controllers.GetLikedStatus)
 
 }

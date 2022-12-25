@@ -9,15 +9,10 @@ import (
 )
 
 func GetLikedStatus(c *fiber.Ctx) error {
-	// Check that user is logged in
-	user, err := utils.GetCurrentUser(c, SecretKey)
-	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
-	}
-
 	var popularity models.Popularity
 	postId := c.Params("postId")
-	var condition = map[string]interface{}{"post_id": postId, "user_id": user.UserId}
+	userId := c.Params("userId")
+	var condition = map[string]interface{}{"post_id": postId, "user_id": userId}
 	res := database.DB.Where(condition).Limit(1).Find(&popularity)
 	if err := res.Error; err != nil {
 		utils.ErrorResponse(c, utils.GetError)

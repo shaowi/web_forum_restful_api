@@ -10,11 +10,6 @@ import (
 )
 
 func Comments(c *fiber.Ctx) error {
-	// Check that user is logged in
-	if _, err := utils.GetCurrentUser(c, SecretKey); err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
-	}
-
 	comments := []models.Comment{}
 	postId := c.Params("postId")
 	condition := map[string]interface{}{"post_id": postId}
@@ -33,10 +28,9 @@ func AddComment(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Check that user is logged in
-	user, err := utils.GetCurrentUser(c, SecretKey)
+	user_id, err := utils.ParseUint(data["user_id"])
 	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
+		return err
 	}
 	postId, err := utils.ParseUint(c.Params("postId"))
 	if err != nil {
@@ -44,7 +38,7 @@ func AddComment(c *fiber.Ctx) error {
 	}
 
 	comment := models.Comment{
-		UserId:    user.UserId,
+		UserId:    user_id,
 		PostId:    postId,
 		Content:   data["content"],
 		CreatedDt: time.Now().Unix(),
@@ -58,21 +52,10 @@ func AddComment(c *fiber.Ctx) error {
 }
 
 func DeleteComment(c *fiber.Ctx) error {
-	// Check that user is logged in
-	user, err := utils.GetCurrentUser(c, SecretKey)
-	if err != nil {
-		return utils.ErrorResponse(c, utils.UserNotFound)
+	commentId := c.Params("commentId")
+	if err := database.DB.Delete(&models.Comment{}, commentId).Error; err != nil {
+		return utils.ErrorResponse(c, utils.DeleteError)
 	}
 
-	// Check that user is an administrator
-	if user.AccessType == 1 {
-		commentId := c.Params("commentId")
-		if err := database.DB.Delete(&models.Comment{}, commentId).Error; err != nil {
-			return utils.ErrorResponse(c, utils.DeleteError)
-		}
-
-		return utils.ResponseBody(c, utils.DeleteSuccess)
-	}
-
-	return utils.ErrorResponse(c, utils.ForbiddenAction)
+	return utils.ResponseBody(c, utils.DeleteSuccess)
 }

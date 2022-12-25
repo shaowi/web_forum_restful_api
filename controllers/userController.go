@@ -15,7 +15,12 @@ import (
 const SecretKey = "secret"
 
 func User(c *fiber.Ctx) error {
-	user, err := utils.GetCurrentUser(c, SecretKey)
+	var data map[string]string
+
+	if err := c.BodyParser(&data); err != nil {
+		return err
+	}
+	user, err := utils.GetCurrentUser(c, SecretKey, data["jwt_token"])
 
 	if err != nil {
 		c.Status(fiber.StatusNotFound)
@@ -25,7 +30,12 @@ func User(c *fiber.Ctx) error {
 }
 
 func UserStats(c *fiber.Ctx) error {
-	user, err := utils.GetCurrentUser(c, SecretKey)
+	var data map[string]string
+
+	if err := c.BodyParser(&data); err != nil {
+		return err
+	}
+	user, err := utils.GetCurrentUser(c, SecretKey, data["jwt_token"])
 
 	if err != nil {
 		c.Status(fiber.StatusNotFound)
@@ -108,29 +118,7 @@ func Login(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, utils.LogInError)
 	}
 
-	cookie := fiber.Cookie{
-		Name:     "jwt",
-		Value:    token,
-		Expires:  time.Now().Add(time.Hour * 24),
-		HTTPOnly: true,
-	}
-
-	c.Cookie(&cookie)
-
-	return utils.ResponseBody(c, utils.UserLoggedIn)
-}
-
-func Logout(c *fiber.Ctx) error {
-	cookie := fiber.Cookie{
-		Name:     "jwt",
-		Value:    "",
-		Expires:  time.Now().Add(-time.Hour),
-		HTTPOnly: true,
-	}
-
-	c.Cookie(&cookie)
-
-	return utils.ResponseBody(c, utils.UserLoggedOut)
+	return utils.GetRequestResponse(c, fiber.Map{"jwt_token": token})
 }
 
 func ResetPassword(c *fiber.Ctx) error {
