@@ -104,7 +104,6 @@ func SendEmail(newPw string, emailTo string) {
 	if err != nil {
 		panic(err)
 	}
-
 }
 
 func GetHistoryPosts(c *fiber.Ctx, condition map[string]interface{}, joinCondition string) error {

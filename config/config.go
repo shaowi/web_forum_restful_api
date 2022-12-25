@@ -20,6 +20,9 @@ type Config struct {
 // use godot package to load/read the .env file and
 // return the value of the key
 func GoDotEnvVariable(key string) string {
+	if os.Getenv(key) != "" {
+		return os.Getenv(key)
+	}
 
 	// load .env file
 	err := godotenv.Load(".env")
@@ -33,12 +36,12 @@ func GoDotEnvVariable(key string) string {
 
 func GetPostgresConnectionStr() string {
 	config := Config{
-		Host:     os.Getenv("PGHOST"),
-		Port:     GoDotEnvVariable("DB_PORT"),
-		User:     GoDotEnvVariable("DB_USER"),
-		Password: GoDotEnvVariable("DB_PASS"),
-		DBName:   GoDotEnvVariable("DB_NAME"),
-		SSLMode:  GoDotEnvVariable("DB_SSLMODE"),
+		Host:     GoDotEnvVariable("PGHOST"),
+		Port:     GoDotEnvVariable("PGPORT"),
+		User:     GoDotEnvVariable("PGUSER"),
+		Password: GoDotEnvVariable("PGPASS"),
+		DBName:   GoDotEnvVariable("PGNAME"),
+		SSLMode:  GoDotEnvVariable("PGSSLMODE"),
 	}
 
 	postgresConnectionStr :=
