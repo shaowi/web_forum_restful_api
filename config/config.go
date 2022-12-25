@@ -39,8 +39,8 @@ func GetPostgresConnectionStr() string {
 		Host:     GoDotEnvVariable("PGHOST"),
 		Port:     GoDotEnvVariable("PGPORT"),
 		User:     GoDotEnvVariable("PGUSER"),
-		Password: GoDotEnvVariable("PGPASS"),
-		DBName:   GoDotEnvVariable("PGNAME"),
+		Password: GoDotEnvVariable("PGPASSWORD"),
+		DBName:   GoDotEnvVariable("PGDATABASE"),
 		SSLMode:  GoDotEnvVariable("PGSSLMODE"),
 	}
 
