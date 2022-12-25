@@ -4,6 +4,12 @@ Web Forum is a `feature` that allows `businesses` to establish `communication be
 
 - Serve as a platform for customers to provide feedbacks on consumer goods and services.
 
+## [Project Details](https://drive.google.com/file/d/11IoPN_x9z_0FNfyn6FtzaA3pbkVNwAjF/view)
+
+## [Frontend Repository](https://github.com/shaowi/webforum)
+
+## 🏠 [Live Site](https://webforum.netlify.app/)
+
 ## Prerequisites
 
 Before you begin, ensure you have met the following requirements:
