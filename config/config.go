@@ -33,7 +33,7 @@ func GoDotEnvVariable(key string) string {
 
 func GetPostgresConnectionStr() string {
 	config := Config{
-		Host:     GoDotEnvVariable("DB_HOST"),
+		Host:     os.Getenv("PGHOST"),
 		Port:     GoDotEnvVariable("DB_PORT"),
 		User:     GoDotEnvVariable("DB_USER"),
 		Password: GoDotEnvVariable("DB_PASS"),
