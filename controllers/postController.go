@@ -78,6 +78,10 @@ func AddPost(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, utils.CreateError)
 	}
 
+	if err := database.DB.Joins("User").Find(&post).Error; err != nil {
+		return utils.ErrorResponse(c, utils.GetError)
+	}
+
 	return utils.CreateRequestResponse(c, post)
 }
 

@@ -38,7 +38,9 @@ func GetCurrentUser(c *fiber.Ctx, SecretKey string, jwt_token string) (models.Us
 
 	claims := token.Claims.(*jwt.StandardClaims)
 
-	database.DB.Where("user_id = ?", claims.Issuer).First(&user)
+	if err := database.DB.Where("user_id = ?", claims.Issuer).First(&user).Error; err != nil {
+		return user, err
+	}
 
 	return user, nil
 }
