@@ -19,7 +19,7 @@ func main() {
 
 	app.Use(cors.New(cors.Config{
 		AllowCredentials: true,
-		AllowOrigins: "https://webforum.netlify.app"
+		AllowOrigins:     "*",
 	}))
 
 	routes.Setup(app)
